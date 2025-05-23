@@ -22,13 +22,12 @@ CREATE TABLE students (
 2. Install dependencies:
 
 ```bash
-cd backend
 npm install express mysql2 body-parser cors
 node server.js
 ```
 
 ### Frontend
 
-Just open `frontend/index.html` in your browser.
+Just open `index.html` in your browser.
 
 > Make sure `server.js` is running at `http://localhost:3000`
