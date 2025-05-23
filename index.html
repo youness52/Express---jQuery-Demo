@@ -1,0 +1,117 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Management</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+</head>
+<body class="container mt-5">
+
+  <h2 class="mb-4">Student Management</h2>
+
+  <form id="studentForm">
+    <input type="hidden" id="studentId">
+    <div class="mb-3">
+      <input type="text" id="name" class="form-control" placeholder="Name" required>
+    </div>
+    <div class="mb-3">
+      <input type="number" id="age" class="form-control" placeholder="Age" required>
+    </div>
+    <div class="mb-3">
+      <input type="email" id="email" class="form-control" placeholder="Email" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Save Student</button>
+  </form>
+
+  <hr>
+
+  <h4>Students List</h4>
+  <table class="table table-bordered" id="studentsTable">
+    <thead>
+      <tr><th>ID</th><th>Name</th><th>Age</th><th>Email</th><th>Actions</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const apiUrl = 'http://localhost:3000/students';
+
+    function loadStudents() {
+      $.get(apiUrl, function(data) {
+        const rows = data.map(s => `
+          <tr>
+            <td>${s.id}</td>
+            <td>${s.name}</td>
+            <td>${s.age}</td>
+            <td>${s.email}</td>
+            <td>
+              <button class="btn btn-sm btn-info editBtn" data-id="${s.id}">Edit</button>
+              <button class="btn btn-sm btn-danger deleteBtn" data-id="${s.id}">Delete</button>
+            </td>
+          </tr>
+        `);
+        $('#studentsTable tbody').html(rows.join(''));
+      });
+    }
+
+    $(document).ready(function() {
+      loadStudents();
+
+      $('#studentForm').submit(function(e) {
+        e.preventDefault();
+        const id = $('#studentId').val();
+        const student = {
+          name: $('#name').val(),
+          age: $('#age').val(),
+          email: $('#email').val()
+        };
+
+        if (id) {
+          $.ajax({
+            url: `${apiUrl}/${id}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(student),
+            success: function() {
+              $('#studentForm')[0].reset();
+              $('#studentId').val('');
+              loadStudents();
+            }
+          });
+        } else {
+          $.post(apiUrl, student, function() {
+            $('#studentForm')[0].reset();
+            loadStudents();
+          });
+        }
+      });
+
+      $(document).on('click', '.editBtn', function() {
+        const id = $(this).data('id');
+        $.get(`${apiUrl}/${id}`, function(data) {
+          $('#studentId').val(data.id);
+          $('#name').val(data.name);
+          $('#age').val(data.age);
+          $('#email').val(data.email);
+        });
+      });
+
+      $(document).on('click', '.deleteBtn', function() {
+        const id = $(this).data('id');
+        if (confirm('Are you sure you want to delete this student?')) {
+          $.ajax({
+            url: `${apiUrl}/${id}`,
+            method: 'DELETE',
+            success: function() {
+              loadStudents();
+            }
+          });
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>
